@@ -1,0 +1,39 @@
+paths:
+  watch_dir: /Volumes/Music/临时
+  organized_dir: /Volumes/Music/临时/已整理
+  db_path: /Volumes/openclaw/music-tagger/data/library.db
+  log_path: /Volumes/openclaw/music-tagger/logs/music-tagger.log
+
+matching:
+  sources:
+    - qq_music
+    - netease
+    - acoustid
+  confidence_threshold: 0.80
+  search_limit: 5
+
+tagging:
+  overwrite: false
+  fields:
+    - title
+    - artist
+    - album
+    - year
+    - cover
+    - lyrics
+    - lrc
+  cover_size: 500
+  cover_format: jpg
+
+rename:
+  pattern: "{artist} - {title}"
+  organize_pattern: "{artist}/{album}"
+
+qq_music:
+  request_delay: 0.5
+
+netease:
+  request_delay: 0.5
+
+acoustid:
+  api_key: ""
