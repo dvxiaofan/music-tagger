@@ -23,3 +23,6 @@ Thumbs.db
 # Virtual env
 .venv/
 venv/
+
+# NAS test config
+config-nas.yaml
