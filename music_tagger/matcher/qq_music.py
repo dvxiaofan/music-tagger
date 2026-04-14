@@ -1,6 +1,7 @@
 """QQ音乐匹配器 - 主力搜索源"""
 
 import asyncio
+import base64
 import logging
 import re
 
@@ -12,12 +13,12 @@ from . import BaseMatcher, MatchResult
 logger = logging.getLogger(__name__)
 
 SEARCH_URL = "https://u.y.qq.com/cgi-bin/musicu.fcg"
-LYRIC_URL = "https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_yqq.fcg"
 COVER_URL_TEMPLATE = "https://y.qq.com/music/photo_new/T002R500x500M000{album_mid}.jpg"
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     "Referer": "https://y.qq.com/",
+    "Origin": "https://y.qq.com",
 }
 
 
@@ -54,18 +55,18 @@ class QQMusicMatcher(BaseMatcher):
         # 获取歌词
         await asyncio.sleep(self.request_delay)
         try:
-            lyrics_data = await self._fetch_lyrics(best["songmid"])
+            lyrics_data = await self._fetch_lyrics(best["mid"])
             if lyrics_data:
                 result.lrc_lyrics = lyrics_data.get("lrc", "")
                 result.lyrics = _strip_lrc_tags(lyrics_data.get("lrc", ""))
         except Exception as e:
-            logger.warning("QQ音乐歌词获取失败 [%s]: %s", best.get("songname", ""), e)
+            logger.warning("QQ音乐歌词获取失败 [%s]: %s", best.get("name", ""), e)
 
         return result
 
     async def _search_songs(self, keyword: str, limit: int) -> list[dict]:
         payload = {
-            "comm": {"ct": 11, "cv": "12080008"},
+            "comm": {"ct": 19, "cv": 1859},
             "req_1": {
                 "method": "DoSearchForQQMusicDesktop",
                 "module": "music.search.SearchCgiService",
@@ -104,17 +105,17 @@ class QQMusicMatcher(BaseMatcher):
         return None
 
     def _calc_confidence(self, song: dict, title: str, artist: str = None) -> float:
-        song_title = song.get("songname", "")
+        # 新版 API 字段：name/title 均可
+        song_title = song.get("name") or song.get("title") or song.get("songname", "")
         song_artists = " ".join(s.get("name", "") for s in song.get("singer", []))
 
         title_score = fuzz.ratio(title.lower(), song_title.lower()) / 100.0
 
         if artist:
             artist_score = fuzz.partial_ratio(artist.lower(), song_artists.lower()) / 100.0
-            # 加权：title 60%, artist 40%
             confidence = title_score * 0.6 + artist_score * 0.4
         else:
-            confidence = title_score * 0.7  # 无 artist 时降权
+            confidence = title_score * 0.7
 
         return round(confidence, 3)
 
@@ -123,13 +124,16 @@ class QQMusicMatcher(BaseMatcher):
         album_info = song.get("album", {})
         album_mid = album_info.get("mid", "")
 
+        song_title = song.get("name") or song.get("title") or song.get("songname", "")
+        song_mid = song.get("mid") or song.get("songmid", "")
+
         return MatchResult(
             source=self.name,
-            title=song.get("songname", ""),
+            title=song_title,
             artist=" / ".join(singers) if singers else "",
             album=album_info.get("name", ""),
             year=_extract_year(song.get("time_public", "")),
-            song_id=song.get("songmid", ""),
+            song_id=song_mid,
             album_id=album_mid,
             confidence=song.get("_confidence", 0.0),
             cover_url=COVER_URL_TEMPLATE.format(album_mid=album_mid) if album_mid else "",
@@ -137,9 +141,8 @@ class QQMusicMatcher(BaseMatcher):
 
     async def _fetch_lyrics(self, songmid: str) -> dict | None:
         """获取歌词（LRC 格式）"""
-        # 使用新版接口
         payload = {
-            "comm": {"ct": 11, "cv": "12080008"},
+            "comm": {"ct": 19, "cv": 1859},
             "req_1": {
                 "module": "music.musichallSong.PlayLyricInfo",
                 "method": "GetPlayLyricInfo",
@@ -159,8 +162,6 @@ class QQMusicMatcher(BaseMatcher):
         lrc = lyric_data.get("lyric", "")
 
         if lrc:
-            # QQ音乐歌词可能是 base64 编码
-            import base64
             try:
                 lrc = base64.b64decode(lrc).decode("utf-8")
             except Exception:

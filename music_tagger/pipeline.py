@@ -138,6 +138,15 @@ class Pipeline:
             # 恢复歌词
             lrc_content = track.get("lrc_content") or ""
             match.lrc_lyrics = lrc_content
+            # 从 LRC 提取纯文本歌词用于内嵌
+            if lrc_content:
+                import re
+                lines = []
+                for line in lrc_content.splitlines():
+                    cleaned = re.sub(r"\[[\d:.]+\]", "", line).strip()
+                    if cleaned and not cleaned.startswith("["):
+                        lines.append(cleaned)
+                match.lyrics = "\n".join(lines)
 
             # 下载封面
             cover_data = await download_cover(match.cover_url)

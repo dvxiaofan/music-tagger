@@ -29,5 +29,8 @@ dev = [
 music-tagger = "music_tagger.cli:main"
 
 [build-system]
-requires = ["setuptools>=68.0"]
-build-backend = "setuptools.backends._legacy:_Backend"
+requires = ["setuptools>=75.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["music_tagger*"]
