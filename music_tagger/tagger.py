@@ -75,9 +75,9 @@ def _tag_flac(filepath: Path, match: MatchResult, cover_data: bytes | None,
         audio[tag_name] = [value]
         written.append(field)
 
-    # 歌词
-    if match.lyrics and (overwrite or not audio.get("lyrics")):
-        audio["lyrics"] = [match.lyrics]
+    # 歌词（写入 LRC 格式，支持滚动显示）
+    if match.lrc_lyrics and (overwrite or not audio.get("lyrics")):
+        audio["lyrics"] = [match.lrc_lyrics]
         written.append("lyrics")
 
     # 封面
@@ -121,9 +121,9 @@ def _tag_m4a(filepath: Path, match: MatchResult, cover_data: bytes | None,
         tags[tag_name] = [value]
         written.append(field)
 
-    # 歌词
-    if match.lyrics and (overwrite or not tags.get("\xa9lyr")):
-        tags["\xa9lyr"] = [match.lyrics]
+    # 歌词（写入 LRC 格式，支持滚动显示）
+    if match.lrc_lyrics and (overwrite or not tags.get("\xa9lyr")):
+        tags["\xa9lyr"] = [match.lrc_lyrics]
         written.append("lyrics")
 
     # 封面
@@ -162,9 +162,9 @@ def _tag_mp3(filepath: Path, match: MatchResult, cover_data: bytes | None,
         tags.add(cls(encoding=3, text=[value]))
         written.append(field)
 
-    # 歌词
-    if match.lyrics and (overwrite or not any(k.startswith("USLT") for k in tags.keys())):
-        tags.add(USLT(encoding=3, lang="chi", text=match.lyrics))
+    # 歌词（写入 LRC 格式，支持滚动显示）
+    if match.lrc_lyrics and (overwrite or not any(k.startswith("USLT") for k in tags.keys())):
+        tags.add(USLT(encoding=3, lang="chi", text=match.lrc_lyrics))
         written.append("lyrics")
 
     # 封面
