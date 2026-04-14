@@ -200,6 +200,19 @@ def retry(ctx, track_id):
         pipeline.close()
 
 
+@main.command()
+@click.pass_context
+def serve(ctx):
+    """启动 MCP Server（供 Agent 调用）"""
+    try:
+        from .mcp_server import mcp
+        console.print("[bold green]启动 Music Tagger MCP Server...[/]")
+        mcp.run()
+    except ImportError:
+        console.print("[bold red]MCP SDK 未安装，请执行: pip install mcp[/]")
+        sys.exit(1)
+
+
 def _print_status(pipeline: Pipeline):
     stats = pipeline.status()
     if not stats:

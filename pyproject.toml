@@ -27,6 +27,7 @@ dev = [
 
 [project.scripts]
 music-tagger = "music_tagger.cli:main"
+music-tagger-mcp = "music_tagger.mcp_server:main"
 
 [build-system]
 requires = ["setuptools>=75.0"]
