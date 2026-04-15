@@ -6,24 +6,25 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 
-def save_lrc_file(filepath: Path, lrc_content: str) -> bool:
+def save_lrc_file(filepath: Path, lrc_content: str, overwrite: bool = False) -> bool:
     """
     保存 LRC 歌词文件。
     filepath: 音频文件路径（自动替换扩展名为 .lrc）
+    overwrite: 是否覆盖已有 LRC 文件
     """
     if not lrc_content or not lrc_content.strip():
         return False
 
     lrc_path = filepath.with_suffix(".lrc")
 
-    # 如果已有 LRC 文件，不覆盖
-    if lrc_path.exists():
+    # 如果已有 LRC 文件且不覆盖，跳过
+    if lrc_path.exists() and not overwrite:
         logger.info("LRC 文件已存在，跳过: %s", lrc_path.name)
         return False
 
     try:
         lrc_path.write_text(lrc_content, encoding="utf-8")
-        logger.info("LRC 文件已保存: %s", lrc_path.name)
+        logger.info("LRC 文件已%s: %s", "覆盖" if lrc_path.exists() else "保存", lrc_path.name)
         return True
     except Exception as e:
         logger.error("保存 LRC 失败 %s: %s", lrc_path.name, e)

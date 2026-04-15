@@ -114,7 +114,7 @@ class Pipeline:
             logger.info("没有待标签的文件")
             return
 
-        overwrite = self.config.tagging.get("overwrite", False)
+        overwrite = self.config.tagging.get("overwrite", True)
 
         for track in tracks:
             filepath = Path(track["file_path"])
@@ -155,7 +155,7 @@ class Pipeline:
                 written = write_tags(filepath, match, cover_data, overwrite)
                 # 保存 LRC 文件
                 if match.lrc_lyrics:
-                    save_lrc_file(filepath, match.lrc_lyrics)
+                    save_lrc_file(filepath, match.lrc_lyrics, overwrite=overwrite)
 
                 self.db.set_tagged(track["id"], written)
                 logger.info("标签完成: %s → %s", filepath.name, written)

@@ -13,7 +13,7 @@ matching:
   search_limit: 5
 
 tagging:
-  overwrite: false
+  overwrite: true
   fields:
     - title
     - artist
