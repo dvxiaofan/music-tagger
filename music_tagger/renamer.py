@@ -73,7 +73,7 @@ def organize_track(track: dict, organized_dir: Path, organize_pattern: str,
                    db: Database) -> Path | None:
     """
     将已重命名的文件移入已整理目录。
-    目录结构：已整理/艺术家/专辑名/文件
+    目录结构由 organize_pattern 控制（当前：已整理/艺术家/文件，歌曲平铺）
     """
     filepath = Path(track["file_path"])
     if not filepath.exists():

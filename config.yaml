@@ -27,7 +27,7 @@ tagging:
 
 rename:
   pattern: "{artist} - {title}"
-  organize_pattern: "{artist}/{album}"
+  organize_pattern: "{artist}"
 
 qq_music:
   request_delay: 0.5
