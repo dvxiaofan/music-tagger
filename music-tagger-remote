@@ -1,0 +1,13 @@
+#!/bin/bash
+# music-tagger-remote - 通过SSH远程执行music-tagger
+# 零配置改动，零Token消耗
+# 可直接用于crontab：*/5 * * * * /path/to/music-tagger-remote run
+
+SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)/run-remote.py"
+
+if [ ! -f "$SCRIPT_PATH" ]; then
+    echo "ERROR: run-remote.py not found at $SCRIPT_PATH"
+    exit 1
+fi
+
+python3 "$SCRIPT_PATH" "$@"
